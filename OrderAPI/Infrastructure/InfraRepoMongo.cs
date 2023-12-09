@@ -11,7 +11,7 @@ public class InfraRepoMongo : IInfraRepo
     public InfraRepoMongo(IConfiguration configuration, ILogger<InfraRepoMongo> logger)
     {
         _logger = logger;
-        var client = new MongoClient(configuration.GetConnectionString("MongoDB"));
+        var client = new MongoClient(configuration.GetConnectionString("CONNECTION_STRING"));
         _orders = client.GetDatabase("OrderDB").GetCollection<Order>("Orders");
     }
 
