@@ -7,12 +7,12 @@ namespace OrderAPI.Controllers;
 
     [Route("[controller]")]
     [ApiController]
-    public class OrderController : ControllerBase
+    public class OrdersController : ControllerBase
     {
         private readonly IServiceOrder _serviceOrder;
-        private readonly ILogger<OrderController> _logger;
+        private readonly ILogger<OrdersController> _logger;
 
-        public OrderController( IServiceOrder serviceOrder, ILogger<OrderController> logger)
+        public OrdersController( IServiceOrder serviceOrder, ILogger<OrdersController> logger)
         {
             _serviceOrder = serviceOrder;
             _logger = logger;
