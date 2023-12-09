@@ -9,6 +9,8 @@ using VaultSharp.V1.AuthMethods.Token;
 using VaultSharp.V1.AuthMethods;
 using VaultSharp.V1.Commons;
 using System.Text;
+using OrderAPI.Infrastructure;
+using OrderAPI.Services;
 
 var logger = NLog.LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
 logger.Debug("init main");
@@ -21,6 +23,8 @@ try
 
     // Add services to the container.
     builder.Services.AddSingleton<IVaultClient>(sidecar.vaultClient);
+    builder.Services.AddScoped<IInfraRepo, InfraRepoMongo>();
+    builder.Services.AddScoped<IServiceOrder, ServiceOrder>();
 
     builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
