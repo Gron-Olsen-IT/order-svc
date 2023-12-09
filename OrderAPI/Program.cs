@@ -3,13 +3,8 @@ using NLog;
 using NLog.Web;
 using sidecar_lib;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 using VaultSharp;
-using VaultSharp.V1.AuthMethods.Token;
-using VaultSharp.V1.AuthMethods;
-using VaultSharp.V1.Commons;
-using System.Text;
-using OrderAPI.Infrastructure;
+using OrderAPI.OrderRepo;
 using OrderAPI.Services;
 
 var logger = NLog.LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();

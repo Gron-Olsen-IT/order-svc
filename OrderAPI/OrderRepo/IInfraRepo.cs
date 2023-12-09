@@ -1,6 +1,6 @@
 // Purpose: Interface for the InfraRepo class.
 using Orderapi.Models;
-namespace OrderAPI.Infrastructure
+namespace OrderAPI.OrderRepo
 {
     public interface IInfraRepo
     {

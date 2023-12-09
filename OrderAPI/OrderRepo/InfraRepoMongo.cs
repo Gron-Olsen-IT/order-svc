@@ -1,7 +1,7 @@
 using MongoDB.Driver;
 using Orderapi.Models;
 
-namespace OrderAPI.Infrastructure;
+namespace OrderAPI.OrderRepo;
 
 public class InfraRepoMongo : IInfraRepo
 {
@@ -11,8 +11,8 @@ public class InfraRepoMongo : IInfraRepo
     public InfraRepoMongo(IConfiguration configuration, ILogger<InfraRepoMongo> logger)
     {
         _logger = logger;
-        var client = new MongoClient(configuration.GetConnectionString("CONNECTION_STRING"));
-        _orders = client.GetDatabase("OrderDB").GetCollection<Order>("Orders");
+        var mongoDatabase = new MongoClient(configuration["CONNECTION_STRING"]).GetDatabase("OrderDB");
+        _orders = mongoDatabase.GetCollection<Order>("Orders");
     }
 
     public async Task<List<Order>> GetAllOrders()

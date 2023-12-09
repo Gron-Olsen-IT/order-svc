@@ -1,6 +1,6 @@
 // Purpose: To provide a service layer for the OrderAPI.
 using Orderapi.Models;
-using OrderAPI.Infrastructure;
+using OrderAPI.OrderRepo;
 namespace OrderAPI.Services;
 
 public class ServiceOrder : IServiceOrder
