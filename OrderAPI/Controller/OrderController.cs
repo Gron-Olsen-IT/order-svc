@@ -19,10 +19,10 @@ namespace OrderAPI.Controllers;
         }
 
     [HttpGet]
-    public ActionResult<List<Order>> GetAllOrders()
+    public async Task<ActionResult<List<Order>>> GetAllOrders()
     {
         try {
-            return Ok(_serviceOrder.GetAllOrders());
+            return Ok(await _serviceOrder.GetAllOrders());
         } catch (Exception e) {
             _logger.LogError(e.Message);
             return StatusCode(500, e.Message);
