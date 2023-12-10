@@ -1,14 +1,14 @@
 using MongoDB.Driver;
-using Orderapi.Models;
+using OrderAPI.Models;
 
 namespace OrderAPI.OrderRepo;
 
-public class InfraRepoMongo : IInfraRepo
+public class OrderRepoMongo : IOrderRepo
 {
     private readonly IMongoCollection<Order> _orders;
-    private readonly ILogger<InfraRepoMongo> _logger;
+    private readonly ILogger<OrderRepoMongo> _logger;
 
-    public InfraRepoMongo(IConfiguration configuration, ILogger<InfraRepoMongo> logger)
+    public OrderRepoMongo(IConfiguration configuration, ILogger<OrderRepoMongo> logger)
     {
         _logger = logger;
         var mongoDatabase = new MongoClient(configuration["CONNECTION_STRING"]).GetDatabase("OrderDB");
@@ -41,10 +41,11 @@ public class InfraRepoMongo : IInfraRepo
         }
     }
 
-    public async Task<Order> CreateOrder(Order order)
+    public async Task<Order> CreateOrder(OrderDTO orderDTO)
     {
         try
         {
+            Order order = new(orderDTO);
             await _orders.InsertOneAsync(order);
             return order;
         }
