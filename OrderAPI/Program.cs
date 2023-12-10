@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using VaultSharp;
 using OrderAPI.OrderRepo;
 using OrderAPI.Services;
+using OrderAPI.InfraRepo;
 
 var logger = NLog.LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
 logger.Debug("init main");
@@ -18,7 +19,8 @@ try
 
     // Add services to the container.
     builder.Services.AddSingleton<IVaultClient>(sidecar.vaultClient);
-    builder.Services.AddScoped<IInfraRepo, InfraRepoMongo>();
+    builder.Services.AddScoped<IOrderRepo, OrderRepoMongo>();
+    builder.Services.AddScoped<IInfraRepo, InfraRepo>();
     builder.Services.AddScoped<IServiceOrder, ServiceOrder>();
 
     builder.Services

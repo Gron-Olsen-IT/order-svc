@@ -1,15 +1,20 @@
 // Purpose: To provide a service layer for the OrderAPI.
-using Orderapi.Models;
+using OrderAPI.Models;
+using OrderAPI.InfraRepo;
 using OrderAPI.OrderRepo;
+using Microsoft.AspNetCore.Http.HttpResults;
+using System.Net;
 namespace OrderAPI.Services;
 
 public class ServiceOrder : IServiceOrder
 {
     private readonly IInfraRepo _infraRepo;
+    private readonly IOrderRepo _orderRepo;
     private readonly ILogger<ServiceOrder> _logger;
 
-    public ServiceOrder(IInfraRepo infraRepo, ILogger<ServiceOrder> logger)
+    public ServiceOrder(IOrderRepo orderRepo ,IInfraRepo infraRepo, ILogger<ServiceOrder> logger)
     {
+        _orderRepo = orderRepo;
         _infraRepo = infraRepo;
         _logger = logger;
     }
@@ -18,7 +23,7 @@ public class ServiceOrder : IServiceOrder
     {
         try
         {
-            return await _infraRepo.GetAllOrders();
+            return await _orderRepo.GetAllOrders();
         }
         catch (Exception e)
         {
@@ -31,7 +36,7 @@ public class ServiceOrder : IServiceOrder
     {
         try
         {
-            return await _infraRepo.GetOrderById(id);
+            return await _orderRepo.GetOrderById(id);
         }
         catch (Exception e)
         {
@@ -40,11 +45,18 @@ public class ServiceOrder : IServiceOrder
         }
     }
 
-    public async Task<Order> CreateOrder(Order order)
+    public async Task<Order> CreateOrder(OrderDTO orderDTO, string token)
     {
         try
         {
-            return await _infraRepo.CreateOrder(order);
+            if (await _infraRepo.DoesBidExist(orderDTO.BidId, token) != HttpStatusCode.OK){
+                throw new Exception("Bid does not exist || Bad Request from bid microservice");
+            }
+            if (orderDTO.Status != 0){
+                throw new Exception("Status must be 0");
+            }
+
+            return await _orderRepo.CreateOrder(orderDTO);
         }
         catch (Exception e)
         {
@@ -57,7 +69,7 @@ public class ServiceOrder : IServiceOrder
     {
         try
         {
-            return await _infraRepo.UpdateOrder(order);
+            return await _orderRepo.UpdateOrder(order);
         }
         catch (Exception e)
         {
@@ -70,7 +82,7 @@ public class ServiceOrder : IServiceOrder
     {
         try
         {
-            return await _infraRepo.DeleteOrder(id);
+            return await _orderRepo.DeleteOrder(id);
         }
         catch (Exception e)
         {
