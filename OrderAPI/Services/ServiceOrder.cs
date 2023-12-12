@@ -1,23 +1,34 @@
 // Purpose: To provide a service layer for the OrderAPI.
 using OrderAPI.Models;
-using OrderAPI.InfraRepo;
 using OrderAPI.OrderRepo;
-using Microsoft.AspNetCore.Http.HttpResults;
-using System.Net;
-namespace OrderAPI.Services;
+using OrderAPI.Infrastructure;
 
+namespace OrderAPI.Services;
 public class ServiceOrder : IServiceOrder
 {
     private readonly IInfraRepo _infraRepo;
     private readonly IOrderRepo _orderRepo;
     private readonly ILogger<ServiceOrder> _logger;
 
-    public ServiceOrder(IOrderRepo orderRepo ,IInfraRepo infraRepo, ILogger<ServiceOrder> logger)
+    public ServiceOrder(IOrderRepo orderRepo, IInfraRepo infraRepo, ILogger<ServiceOrder> logger)
     {
         _orderRepo = orderRepo;
         _infraRepo = infraRepo;
         _logger = logger;
     }
+
+    public async Task<List<Order>>? CheckIfAnyAuctionsAreDone()
+    {
+        List<Order> orders = new List<Order>(); 
+        string token = await _infraRepo.Login();
+        
+        if (orders.Count == 0){
+            return null!;
+        }
+        return orders;
+    }
+
+
 
     public async Task<List<Order>> GetAllOrders()
     {
@@ -49,13 +60,10 @@ public class ServiceOrder : IServiceOrder
     {
         try
         {
-            if (await _infraRepo.DoesBidExist(orderDTO.BidId, token) != HttpStatusCode.OK){
-                throw new Exception("Bid does not exist || Bad Request from bid microservice");
-            }
-            if (orderDTO.Status != 0){
+            if (orderDTO.Status != 0)
+            {
                 throw new Exception("Status must be 0");
             }
-
             return await _orderRepo.CreateOrder(orderDTO);
         }
         catch (Exception e)

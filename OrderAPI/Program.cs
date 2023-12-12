@@ -6,7 +6,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using VaultSharp;
 using OrderAPI.OrderRepo;
 using OrderAPI.Services;
-using OrderAPI.InfraRepo;
+using OrderAPI.Infrastructure;
+using OrderAPI;
 
 var logger = NLog.LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
 logger.Debug("init main");
@@ -18,10 +19,12 @@ try
     var builder = WebApplication.CreateBuilder(args);
 
     // Add services to the container.
+    builder.Services.AddHostedService<OrderWorker>();
     builder.Services.AddSingleton<IVaultClient>(sidecar.vaultClient);
-    builder.Services.AddScoped<IOrderRepo, OrderRepoMongo>();
-    builder.Services.AddScoped<IInfraRepo, InfraRepo>();
-    builder.Services.AddScoped<IServiceOrder, ServiceOrder>();
+    builder.Services.AddSingleton<IInfraRepo, InfraRepo>();
+    builder.Services.AddSingleton<IOrderRepo, OrderRepoMongo>();
+    builder.Services.AddSingleton<IServiceOrder, ServiceOrder>();
+
 
     builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -35,6 +38,7 @@ try
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
 
+    builder.Services.AddHostedService<OrderWorker>();
     var app = builder.Build();
 
     // Configure the HTTP request pipeline.
