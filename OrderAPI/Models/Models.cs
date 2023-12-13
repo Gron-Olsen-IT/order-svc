@@ -55,6 +55,11 @@ public record Customer : User
     {
 
     }
+    public Customer(User user)
+    {
+        Id=user.Id; GivenName = user.GivenName; FamilyName = user.FamilyName; Address = user.Address; Email = user.Email; Telephone = user.Telephone;
+    }
+    
 }
 public record Employee : User
 {
@@ -65,6 +70,45 @@ public record Employee : User
     public Employee(string givenName, string familyName, string address, string email, int phoneNumber, string jobTitle, string department, string location, int salary)
     : base(givenName, familyName, address, email, phoneNumber)
     {
-        JobTitle = jobTitle; Department = department; Location = location; Salary = salary;
+        JobTitle = jobTitle; Department = department; Location = location; Salary = salary;JobTitle="";Department="";Location="";Salary=0;
+    }
+
+    public Employee(User user)
+    {
+        Id=user.Id; GivenName = user.GivenName; FamilyName = user.FamilyName; Address = user.Address; Email = user.Email; Telephone = user.Telephone;JobTitle="";Department="";Location="";Salary=0;
+
+    }
+}
+
+public record User
+{
+    public string? Id { get; set; }
+    public string GivenName { get; set; }
+    public string FamilyName { get; set; }
+    public string Address { get; set; }
+    public string Email { get; set; }
+    public int Telephone { get; set; }
+
+    public User()
+    {
+        GivenName = ""; FamilyName = ""; Address = ""; Email = ""; Telephone = 0;
+    }
+
+    [JsonConstructor]
+    public User(string id, string givenName, string familyName, string address, string email, int telephone)
+    {
+        Id = id; GivenName = givenName; FamilyName = familyName; Address = address; Email = email; Telephone = telephone;
+    }
+    public User(string givenName, string familyName, string address, string email, int telephone)
+    {
+        GivenName = givenName; FamilyName = familyName; Address = address; Email = email; Telephone = telephone;
+    }
+    public User(Customer customer)
+    {
+        GivenName = customer.GivenName; FamilyName = customer.FamilyName; Address = customer.Address; Email = customer.Email; Telephone = customer.Telephone;
+    }
+    public User(Employee employee)
+    {
+        GivenName = employee.GivenName; FamilyName = employee.FamilyName; Address = employee.Address; Email = employee.Email; Telephone = employee.Telephone;
     }
 }

@@ -11,8 +11,8 @@ public class OrderRepoMongo : IOrderRepo
     public OrderRepoMongo(IConfiguration configuration, ILogger<OrderRepoMongo> logger)
     {
         _logger = logger;
-        var mongoDatabase = new MongoClient(configuration["CONNECTION_STRING"]).GetDatabase("OrderDB");
-        _orders = mongoDatabase.GetCollection<Order>("Orders");
+        var mongoDatabase = new MongoClient(configuration["CONNECTION_STRING"]).GetDatabase("order_db");
+        _orders = mongoDatabase.GetCollection<Order>("orders");
     }
 
     public async Task<List<Order>> GetAllOrders()
@@ -23,7 +23,7 @@ public class OrderRepoMongo : IOrderRepo
         }
         catch (Exception e)
         {
-            _logger.LogError(e.Message);
+            _logger.LogError("OrderRepoMongo | GetAllOrders - error:" + e.Message);
             throw new Exception(e.Message);
         }
     }
