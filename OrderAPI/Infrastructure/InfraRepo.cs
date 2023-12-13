@@ -162,4 +162,17 @@ namespace OrderAPI.Infrastructure
                 try{
                     var bids = await x.Content.ReadFromJsonAsync<List<Bid>>();
                 }catch{
-                    _logger.LogInformation("Ge
+                    _logger.LogInformation("GetBidsByAuctionIds | No bids found, couldnt deserialize response");
+                    return null!;
+                }
+                _logger.LogInformation($"Response from bid microservice (GetBidsByAuctionIds): {x.StatusCode}, {x.Content.ReadAsStringAsync().Result}");
+                return (await x.Content.ReadFromJsonAsync<List<Bid>>())!;//Content.ReadFromJsonAsync<List<Bid>>())!;
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.Message);
+                throw new Exception(e.Message);
+            }
+        }
+    }
+}
