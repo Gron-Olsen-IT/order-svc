@@ -17,16 +17,15 @@ public class OrderWorker : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-            int x = DateTime.Now.Minute % 1;
-            _logger.LogInformation(x.ToString() + " " + DateTime.Now.Second.ToString());
+            if (DateTime.Now.Second % 10 == 0 ){
+                _logger.LogInformation("Worker is running at: {time}", DateTimeOffset.Now);
+            }
             if (DateTime.Now.Minute % 1 == 0 && DateTime.Now.Second == 1)
             {
-                _logger.LogInformation("Check if any auctions is finish");
-                List<Order>? orders;
                 try
                 {
-                    orders = await _serviceOrder.CheckIfAnyAuctionsAreDone()!;
+                    _logger.LogInformation("Check if any auctions is finish");
+                    List<Order>? orders = await _serviceOrder.CheckIfAnyAuctionsAreDone();
                     if (orders != null)
                     {
                         foreach (var order in orders)
@@ -37,7 +36,7 @@ public class OrderWorker : BackgroundService
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError(e.Message);
+                    _logger.LogError("Some errors occured", e.Message);
                 }
             }
             await Task.Delay(1000, stoppingToken);

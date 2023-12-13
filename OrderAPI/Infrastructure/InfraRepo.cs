@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using MongoDB.Driver;
@@ -22,12 +23,15 @@ namespace OrderAPI.Infrastructure
 
         public async Task<string> Login()
         {
+            _logger.LogInformation("Login");
             try
             {
                 // Create a JSON payload to send in the request body
                 string jsonPayload = "{\"Email\": \"boes@mail.com\",\"Password\": \"1234\"}";
                 StringContent content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
-                return await _httpClient.PostAsJsonAsync("auth/login", content)!.Result.Content.ReadAsStringAsync();
+                _logger.LogInformation("URL: " + _httpClient.BaseAddress!.ToString() + "auth/login");
+                _logger.LogInformation("Content: " + content.ReadAsStringAsync().Result);
+                return await _httpClient.PostAsync("auth/login", content)!.Result.Content.ReadAsStringAsync();
             }
             catch (Exception e)
             {
@@ -39,10 +43,10 @@ namespace OrderAPI.Infrastructure
         {
             try
             {
-                _httpClient.DefaultRequestHeaders.Add("Authorization", token);
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
                 var response = await _httpClient.GetAsync($"bids/IsBidValid/{bidId}");
                 _logger.LogInformation("URL: " + _httpClient.BaseAddress!.ToString() + $"bids/IsBidValid/{bidId}");
-                _logger.LogInformation($"Response from bid microservice: {response.StatusCode}, {response.Content.ReadAsStringAsync().Result}");
+                _logger.LogInformation($"Response from bid microservice (DoesBidExist): {response.StatusCode}, {response.Content.ReadAsStringAsync().Result}");
                 return response.StatusCode;
             }
             catch (Exception e)
@@ -53,17 +57,24 @@ namespace OrderAPI.Infrastructure
         }
 
 
-        public async Task<List<Auction>> GetAllAuctions(string token)
+        public async Task<List<Auction>?> GetAllExpiredAuctions(string token)
         {
+            _logger.LogInformation("GetAllExpiredAuctions with token");
             try
             {
-                _httpClient.DefaultRequestHeaders.Add("Authorization", token);
-                List<Auction> auctions = (await _httpClient.GetAsync("auctions/expiredactive").Result.Content.ReadFromJsonAsync<List<Auction>>())!;
-                return auctions;
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                var response = await _httpClient.GetAsync("auctions/expiredactive"); //.Result.Content.ReadFromJsonAsync<List<Auction>>()
+                _logger.LogInformation($"Response from auction microservice (GetAllExpiredAuctions): {response.StatusCode}, {response.Content.ReadAsStringAsync().Result}");
+                if (response.StatusCode != HttpStatusCode.OK)
+                {
+                    return null;
+                }
+                return response.Content.ReadFromJsonAsync<List<Auction>>().Result;
             }
-            catch
+            catch (Exception e)
             {
-                throw new Exception();
+                _logger.LogError(e.Message);
+                throw new Exception(e.Message);
             }
         }
 
@@ -71,12 +82,14 @@ namespace OrderAPI.Infrastructure
         {
             try
             {
+                _logger.LogInformation("CloseAuction");
                 //string jsonPayload = "{\"propertyName\": \"updatedValue\"}";
-                string jsonPayload = JsonSerializer.Serialize(auction);
+                string jsonPayload = JsonSerializer.Serialize(OrderStatus.Closed);
                 StringContent content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
-
-                _httpClient.DefaultRequestHeaders.Add("Authorization", token);
-                var response = await _httpClient.PatchAsync("auctions", content);
+                _logger.LogInformation("URL: " + _httpClient.BaseAddress!.ToString() + $"auctions/orderstatus/{auction.Id}");
+                _logger.LogInformation("Token: " + _httpClient.DefaultRequestHeaders.Authorization);
+                var response = await _httpClient.PatchAsync($"auctions/orderstatus/{auction.Id}", content);
+                _logger.LogInformation($"Response from auction microservice (close auction): {response.StatusCode}, {response.Content.ReadAsStringAsync().Result}");
                 return response.StatusCode;
             }
             catch
@@ -87,13 +100,19 @@ namespace OrderAPI.Infrastructure
 
 
         //Get by info to order by id
-        public async
-         Task<Auction> GetAuctionById(string id, string token)
+        //
+        //
+        //
+        //
+        public async Task<List<Auction>> GetAuctionsByIds(List<string> ids, string token)
         {
             try
             {
-                _httpClient.DefaultRequestHeaders.Add("Authorization", token);
-                return (await _httpClient.GetAsync($"auctions/{id}").Result.Content.ReadFromJsonAsync<Auction>())!;
+                _logger.LogInformation("GetAuctionsByIds");
+                StringContent content = new StringContent(JsonSerializer.Serialize(ids), Encoding.UTF8, "application/json");
+                var x = await _httpClient.PostAsync($"auctions/by-ids", content);
+                _logger.LogInformation($"Response from auction microservice (GetAuctionsByIds): {x.StatusCode}, {x.Content.ReadAsStringAsync().Result}");
+                return (await x.Content.ReadFromJsonAsync<List<Auction>>())!;
             }
             catch (Exception e)
             {
@@ -101,25 +120,15 @@ namespace OrderAPI.Infrastructure
                 throw new Exception(e.Message);
             }
         }
-        public async Task<Product> GetProductById(string id, string token)
+        public async Task<List<Product>> GetProductsByIds(List<string> ids, string token)
         {
             try
             {
-                _httpClient.DefaultRequestHeaders.Add("Authorization", token);
-                return (await _httpClient.GetAsync($"products/{id}").Result.Content.ReadFromJsonAsync<Product>())!;
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e.Message);
-                throw new Exception(e.Message);
-            }
-        }
-        public async Task<Customer> GetCustomerById(string id, string token)
-        {
-            try
-            {
-                _httpClient.DefaultRequestHeaders.Add("Authorization", token);
-                return (await _httpClient.GetAsync($"users/customer/{id}").Result.Content.ReadFromJsonAsync<Customer>())!;
+                _logger.LogInformation("GetProductsByIds");
+                StringContent content = new StringContent(JsonSerializer.Serialize(ids), Encoding.UTF8, "application/json");
+                var x = await _httpClient.PostAsync($"products/by-ids", content);
+                _logger.LogInformation($"Response from product microservice: {x.StatusCode}, {x.Content.ReadAsStringAsync().Result}");
+                return (await x.Content.ReadFromJsonAsync<List<Product>>()!)!;
             }
             catch (Exception e)
             {
@@ -128,10 +137,15 @@ namespace OrderAPI.Infrastructure
             }
         }
 
-        public async Task<Employee> GetEmployeeById(string id, string token){
+        public async Task<List<User>> GetUsersByIds(List<string> ids, string token){
             try{
-                _httpClient.DefaultRequestHeaders.Add("Authorization", token);
-                return (await _httpClient.GetAsync($"users/employee/{id}").Result.Content.ReadFromJsonAsync<Employee>())!;
+                _logger.LogInformation("GetUsersByIds");
+                StringContent content = new StringContent(JsonSerializer.Serialize(ids), Encoding.UTF8, "application/json");
+                _logger.LogInformation("Content: " + content.ReadAsStringAsync().Result);
+                _logger.LogInformation("URL: " + _httpClient.BaseAddress!.ToString() + $"users/by-ids");
+                var x = await _httpClient.PostAsync($"users/by-ids", content);
+                _logger.LogInformation($"Response from user microservice: {x.StatusCode}, {x.Content.ReadAsStringAsync().Result}");
+                return (await x.Content.ReadFromJsonAsync<List<User>>())!;
             }
             catch (Exception e)
             {
@@ -139,11 +153,20 @@ namespace OrderAPI.Infrastructure
                 throw new Exception(e.Message);
             }
         }
-        public async Task<Bid> GetBidByAuctionId(List<string> auctionId, string token)
+        public async Task<List<Bid>?> GetBidsByAuctionIds(List<string> ids, string token)
         {
             try{
-                _httpClient.DefaultRequestHeaders.Add("Authorization", token);
-                return (await _httpClient.GetAsync($"bids/max/{auctionId}").Result.Content.ReadFromJsonAsync<Bid>())!;
+                _logger.LogInformation("GetBidsByAuctionIds");
+                StringContent content = new StringContent(JsonSerializer.Serialize(ids), Encoding.UTF8, "application/json");
+                var x = await _httpClient.PostAsync($"bids/max", content); 
+                try{
+                    var bids = await x.Content.ReadFromJsonAsync<List<Bid>>();
+                }catch{
+                    _logger.LogInformation("GetBidsByAuctionIds | No bids found, couldnt deserialize response");
+                    return null!;
+                }
+                _logger.LogInformation($"Response from bid microservice (GetBidsByAuctionIds): {x.StatusCode}, {x.Content.ReadAsStringAsync().Result}");
+                return (await x.Content.ReadFromJsonAsync<List<Bid>>())!;//Content.ReadFromJsonAsync<List<Bid>>())!;
             }
             catch (Exception e)
             {

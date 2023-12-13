@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using OrderAPI.Controllers;
@@ -9,19 +10,19 @@ public record Order
     [BsonRepresentation(BsonType.ObjectId)]
     public string? Id { get; set; }
     public int PurchasePrice { get; set; }
-    public string ProductName { get; set; }
+    public Product Product { get; set; }
     public Customer Buyer { get; set; }
     public Customer Seller { get; set; }
-    public Employee Employee { get; set; }
+    public User Employee { get; set; }
     public OrderStatus Status { get; set; }
     public DateTime CreatedAt { get; set; }
-    public Order(int purchasePrice, string productName, Customer buyer, Customer seller, Employee employee, OrderStatus status, DateTime createdAt)
+    public Order(int purchasePrice, Product product, Customer buyer, Customer seller, User employee, OrderStatus status, DateTime createdAt)
     {
-        PurchasePrice = purchasePrice; ProductName = productName; Buyer = buyer; Seller = seller; Employee = employee; Status = status; CreatedAt = createdAt;
+        PurchasePrice = purchasePrice; Product = product; Buyer = buyer; Seller = seller; Employee = employee; Status = status; CreatedAt = createdAt;
     }
     public Order(OrderDTO orderDTO)
     {
-        PurchasePrice = orderDTO.PurchasePrice; ProductName = orderDTO.ProductName; Buyer = orderDTO.Buyer; Seller = orderDTO.Seller;
+        PurchasePrice = orderDTO.PurchasePrice; Product = orderDTO.Product; Buyer = orderDTO.Buyer; Seller = orderDTO.Seller;
         Employee = orderDTO.Employee; Status = orderDTO.Status; CreatedAt = orderDTO.CreatedAt;
     }
 
@@ -30,48 +31,27 @@ public record Order
 public record OrderDTO
 {
     public int PurchasePrice { get; set; }
-    public string ProductName { get; set; }
+    public Product Product { get; set; }
     public Customer Buyer { get; set; }
     public Customer Seller { get; set; }
-    public Employee Employee { get; set; }
+    public User Employee { get; set; }
     public OrderStatus Status { get; set; }
     public DateTime CreatedAt { get; set; }
 
-    public OrderDTO(int offer, string productName, Customer buyer, Customer seller, Employee employee, OrderStatus status, DateTime createdAt)
+    public OrderDTO(int offer, Product product, Customer buyer, Customer seller, User employee, OrderStatus status, DateTime createdAt)
     {
-        PurchasePrice = offer; ProductName = productName; Buyer = buyer; Seller = seller; Employee = employee; Status = status; CreatedAt = createdAt;
+        PurchasePrice = offer; Product = product; Buyer = buyer; Seller = seller; Employee = employee; Status = status; CreatedAt = createdAt;
     }
 }
-
-
 
 
 public enum OrderStatus
 {
     Created = 0,
     Active = 1,
-    Finish = 2,
-    Rejected = 3
+    Closed = 2,
+    Rejected = 3,
+    Expired = 4
 }
 
-public record User
-{
-    public string? Id { get; set; }
-    public string GivenName { get; set; }
-    public string FamilyName { get; set; }
-    public string Address { get; set; }
-    public string Email { get; set; }
-    public int Telephone { get; set; }
-    public User(string givenName, string familyName, string address, string email, int phoneNumber)
-    {
-        GivenName = givenName; FamilyName = familyName; Address = address; Email = email; Telephone = phoneNumber;
-    }
-    public User(Customer customer)
-    {
-        GivenName = customer.GivenName; FamilyName = customer.FamilyName; Address = customer.Address; Email = customer.Email; Telephone = customer.Telephone;
-    }
-    public User(Employee employee)
-    {
-        GivenName = employee.GivenName; FamilyName = employee.FamilyName; Address = employee.Address; Email = employee.Email; Telephone = employee.Telephone;
-    }
-}
+

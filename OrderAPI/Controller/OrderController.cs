@@ -50,15 +50,13 @@ public class OrdersController : ControllerBase
     {
         try
         {
-            string token = "";
             try{
-                token = Request.Headers["Authorization"]!;
+                string token = Request.Headers["Authorization"]!;
                 _logger.LogInformation("Token: " + token);
+                return Ok(await _serviceOrder.CreateOrder(orderDTO, token));
             }catch{
                 throw new Exception("No token provided");
             }
-            
-            return Ok(await _serviceOrder.CreateOrder(orderDTO, token));
         }
         catch (Exception e)
         {
