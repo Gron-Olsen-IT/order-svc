@@ -64,7 +64,8 @@ public class ServiceOrder : IServiceOrder
             bids = await _infraRepo.GetBidsByAuctionIds(auctions.Select(a => a.Id).ToList()!, token);
             if (bids == null)
             {
-                _logger.LogInformation($"CheckIfAnyAuctionsAreDone | No bids found");
+                _logger.LogInformation($"CheckIfAnyAuctionsAreDone | No bids found | Closing {auctions.Count} auctions");
+                auctions.ForEach(a => _infraRepo.ChangeAuctionStatus(a, OrderStatus.Expired));
                 return null;
             }
             _logger.LogInformation($"CheckIfAnyAuctionsAreDone | Found {bids.Count} bids");
@@ -106,7 +107,8 @@ public class ServiceOrder : IServiceOrder
                 }
                 catch
                 {
-                    _logger.LogInformation($"CheckIfAnyAuctionsAreDone | No offer exists for bid with id: {bid.Id}");
+                    _logger.LogInformation($"CheckIfAnyAuctionsAreDone | No offer exists for bid with id: {bid.Id} | Closing auction");
+                    await _infraRepo.ChangeAuctionStatus(auction, OrderStatus.Expired);
                     continue;
                 }
                 //Get the product
@@ -140,7 +142,7 @@ public class ServiceOrder : IServiceOrder
                 if (order.Id != null)
                 {
                     _logger.LogInformation($"CheckIfAnyAuctionsAreDone | Close order with id: {order.Id}");
-                    if (await _infraRepo.CloseAuction(token, auction) == System.Net.HttpStatusCode.OK)
+                    if (await _infraRepo.ChangeAuctionStatus(auction, OrderStatus.Closed) == System.Net.HttpStatusCode.OK)
                     {
                         _logger.LogInformation($"CheckIfAnyAuctionsAreDone | Closed auction with id: {auction.Id}");
                     }

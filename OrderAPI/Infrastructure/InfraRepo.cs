@@ -78,13 +78,13 @@ namespace OrderAPI.Infrastructure
             }
         }
 
-        public async Task<HttpStatusCode> CloseAuction(string token, Auction auction)
+        public async Task<HttpStatusCode> ChangeAuctionStatus(Auction auction, OrderStatus orderStatus)
         {
             try
             {
                 _logger.LogInformation("CloseAuction");
                 //string jsonPayload = "{\"propertyName\": \"updatedValue\"}";
-                string jsonPayload = JsonSerializer.Serialize(OrderStatus.Closed);
+                string jsonPayload = JsonSerializer.Serialize(orderStatus);
                 StringContent content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
                 _logger.LogInformation("URL: " + _httpClient.BaseAddress!.ToString() + $"auctions/orderstatus/{auction.Id}");
                 var response = await _httpClient.PatchAsync($"auctions/orderstatus/{auction.Id}", content);

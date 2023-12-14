@@ -11,7 +11,7 @@ public interface IInfraRepo
     public Task<string> Login();
     public Task<HttpStatusCode> DoesBidExist(string bidId, string token);
     public Task<List<Auction>?> GetAllExpiredAuctions(string token);
-    public Task<HttpStatusCode> CloseAuction(string token, Auction auction);
+    public Task<HttpStatusCode> ChangeAuctionStatus(Auction auction, OrderStatus orderStatus);
 
     //Get by info to order by id
     public Task<List<Auction>> GetAuctionsByIds(List<string> ids, string token);
