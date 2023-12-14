@@ -87,7 +87,6 @@ namespace OrderAPI.Infrastructure
                 string jsonPayload = JsonSerializer.Serialize(OrderStatus.Closed);
                 StringContent content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
                 _logger.LogInformation("URL: " + _httpClient.BaseAddress!.ToString() + $"auctions/orderstatus/{auction.Id}");
-                _logger.LogInformation("Token: " + _httpClient.DefaultRequestHeaders.Authorization);
                 var response = await _httpClient.PatchAsync($"auctions/orderstatus/{auction.Id}", content);
                 _logger.LogInformation($"Response from auction microservice (close auction): {response.StatusCode}, {response.Content.ReadAsStringAsync().Result}");
                 return response.StatusCode;
@@ -158,15 +157,16 @@ namespace OrderAPI.Infrastructure
             try{
                 _logger.LogInformation("GetBidsByAuctionIds");
                 StringContent content = new StringContent(JsonSerializer.Serialize(ids), Encoding.UTF8, "application/json");
-                var x = await _httpClient.PostAsync($"bids/max", content); 
+                var x = await _httpClient.PostAsync($"bids/max", content);
+                List<Bid> bids = new List<Bid>();
                 try{
-                    var bids = await x.Content.ReadFromJsonAsync<List<Bid>>();
+                    bids = (await x.Content.ReadFromJsonAsync<List<Bid>>())!;
                 }catch{
                     _logger.LogInformation("GetBidsByAuctionIds | No bids found, couldnt deserialize response");
                     return null!;
                 }
                 _logger.LogInformation($"Response from bid microservice (GetBidsByAuctionIds): {x.StatusCode}, {x.Content.ReadAsStringAsync().Result}");
-                return (await x.Content.ReadFromJsonAsync<List<Bid>>())!;//Content.ReadFromJsonAsync<List<Bid>>())!;
+                return bids;//Content.ReadFromJsonAsync<List<Bid>>())!;
             }
             catch (Exception e)
             {
