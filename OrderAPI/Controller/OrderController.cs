@@ -52,7 +52,6 @@ public class OrdersController : ControllerBase
         {
             try{
                 string token = Request.Headers["Authorization"]!;
-                _logger.LogInformation("Token: " + token);
                 return Ok(await _serviceOrder.CreateOrder(orderDTO, token));
             }catch{
                 throw new Exception("No token provided");
