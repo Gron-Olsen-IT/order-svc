@@ -36,7 +36,7 @@ try
     builder.Services.AddControllers();
     // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
     builder.Services.AddEndpointsApiExplorer();
-    builder.Services.ConfigureSwagger("AuctionAPI");
+    builder.Services.ConfigureSwagger("OrderAPI");
 
     builder.Services.AddHostedService<OrderWorker>();
     var app = builder.Build();
