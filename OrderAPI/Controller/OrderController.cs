@@ -4,7 +4,7 @@ using OrderAPI.Services;
 
 namespace OrderAPI.Controllers;
 
-[Route("[controller]")]
+[Route("orders")]
 [ApiController]
 public class OrdersController : ControllerBase
 {
