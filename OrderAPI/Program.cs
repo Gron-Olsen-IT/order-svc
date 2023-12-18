@@ -20,7 +20,7 @@ try
 
     // Add services to the container.
     builder.Services.AddHostedService<OrderWorker>();
-    builder.Services.AddSingleton<IVaultClient>(sidecar.vaultClient);
+    //builder.Services.AddSingleton<IVaultClient>(sidecar.vaultClient);
     builder.Services.AddSingleton<IInfraRepo, InfraRepo>();
     builder.Services.AddSingleton<IOrderRepo, OrderRepoMongo>();
     builder.Services.AddSingleton<IServiceOrder, ServiceOrder>();
